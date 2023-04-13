@@ -4,7 +4,7 @@
 
 ## Nos hace un listado de archivos
 ## Especificamos full.names=T para que nos de la ruta
-directorio <- "./datos/"
+directorio <- ".//tema1/datos/"
 archivo <- list.files(directorio, full.names = T)
 ## leemos las lineas del archivo
 predata <- readLines(archivo)
@@ -67,25 +67,61 @@ combinaciones$menor5 <- NA
 ## si es incorrecta la aproximacion, tener cuidado
 
 for (i in 1:nrow(combinaciones)) {
-    test.object <- chisq.test(table(datos[,combinaciones[i,1]],
-                                                datos[,combinaciones[i,2]]))
-    if(mean(test.object$observed)<5){
-      
-      combinaciones$menor5[i] <- mean(test.object$observed)
-      
-    }else{
-      combinaciones$menor5[i] <- NA
-    }
-    combinaciones$p.value[i] <- test.object$p.value
+  test.object <- chisq.test(table(datos[,combinaciones[i,1]],
+                                  datos[,combinaciones[i,2]]))
+  if(mean(test.object$observed)<5){
     
+    combinaciones$menor5[i] <- mean(test.object$observed)
+    
+  }else{
+    combinaciones$menor5[i] <- NA
+  }
+  combinaciones$p.value[i] <- test.object$p.value
+  
 }
 
+combinaciones$p.adj <- p.adjust(combinaciones$p.value,"BH")
 
+library(data.table)
+library(dplyr)
+datos.dt <- as.data.table(datos)
+
+datos.dt %>% group_by(Gender,SMOKE) %>% sunnarise(n=n())
+
+
+csa <- datos %>% group_by(Gender,NObeyesdad) %>% group_by(n=n()) 
+
+datos$obesidadsino <- (as.factor(grepl("obesity",ignore.case = T,datos$NObeyesdad)))
+
+
+datos$obecidadsino 
+
+datos$CH20 <- as.numeric(datos$CH20)
 ### Haced una tabla con la n de cada subgrupo formado
 ### y el p valor asociado y los valores esperados medios
 
-### ¿Qué genero está mas asociado con la obesidad?
-### dicho genero, su familia esta asociada con obesidad?
+### ¿La obesidad esta asociada al genero?
+
+obesidad <- datos$NObeyesdad
+genero <- datos$Gender
+
+tabla <- (table(obesidad,genero))
+
+###ji cuadrado No esta asociado el genero y la obesidad?
+### 
+
+chisq.test(tabla)
+
+### el genero no esta relacionado con la historia familiar de la obesidad?
+
+historia <- datos$family_history_with_overweight
+genero <- datos$Gender
+
+tablah <- (table(historia,genero))
+
+chisq.test(tablah)
+
+###binom.test
 ### ¿Cuales comen calorico pero no tienen obesidad? ¿
 ### De los que fuman, y no tienen obesidad, tienen actividad fisica
 ### en este paso habra preguntas, pregunten !
@@ -98,7 +134,3 @@ for (i in 1:nrow(combinaciones)) {
 ### Realiza t.test tantos como sean necesarios entre las variables numericas
 ### y las categoricas cuando hay solo dos niveles
 ###   que sucede cuando hay más de un nivel ?
-
-
-
-
